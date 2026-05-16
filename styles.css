@@ -1,0 +1,850 @@
+:root {
+  --bg: #f9f4f1;
+  --surface: rgba(255, 251, 249, 0.8);
+  --text: #24181c;
+  --muted: #75636d;
+  --accent: #c68491;
+  --accent-deep: #a25e70;
+  --line: rgba(36, 24, 28, 0.1);
+  --success: #2b6c58;
+  --warning: #b16e2e;
+  --danger: #973a45;
+  --shadow: 0 24px 60px rgba(123, 79, 92, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: "Manrope", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at top left, rgba(198, 132, 145, 0.18), transparent 26%),
+    radial-gradient(circle at right center, rgba(237, 214, 220, 0.6), transparent 26%),
+    linear-gradient(180deg, #fffaf9 0%, var(--bg) 100%);
+  min-height: 100vh;
+}
+
+img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+.site-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 248, 247, 0.8), rgba(249, 244, 241, 0.94)),
+    url("assets/images/bale1.jpg") center top / cover no-repeat;
+  opacity: 0.2;
+}
+
+.page-shell {
+  position: relative;
+  z-index: 1;
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 64px;
+}
+
+.hero,
+.inner-hero,
+.stage-section,
+.summary-card,
+.payment-card,
+.content-card,
+.info-banner,
+.admin-card {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow);
+}
+
+.hero,
+.inner-hero {
+  border-radius: 32px;
+  padding: 26px;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  margin-bottom: 12px;
+}
+
+.topbar.with-action {
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(88px, 10vw, 118px);
+  height: clamp(88px, 10vw, 118px);
+  padding: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(36, 24, 28, 0.08);
+  box-shadow: 0 14px 30px rgba(123, 79, 92, 0.12);
+}
+
+.brand-logo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.hero-grid,
+.inner-hero-grid,
+.ticket-layout,
+.section-grid,
+.showcase-grid {
+  display: grid;
+  gap: 26px;
+}
+
+.hero-grid {
+  margin-top: 8px;
+  grid-template-columns: minmax(0, 1.3fr) minmax(320px, 0.9fr);
+  align-items: start;
+}
+
+.glass-panel {
+  padding: 28px;
+  border-radius: 28px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 252, 251, 0.52));
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.hero-copy {
+  display: grid;
+  gap: 14px;
+  align-self: start;
+}
+
+.hero-brand-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 18px;
+}
+
+.hero-brand-mark {
+  width: 74px;
+  height: 74px;
+  padding: 8px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.86);
+  border: 1px solid rgba(36, 24, 28, 0.08);
+  box-shadow: 0 14px 30px rgba(123, 79, 92, 0.12);
+}
+
+.hero-brand-text {
+  display: grid;
+  gap: 6px;
+}
+
+.hero-brand-text h1 {
+  font-size: clamp(1.7rem, 3vw, 2.8rem);
+  line-height: 1;
+}
+
+.compact-hero-copy {
+  padding: 14px 18px;
+  align-self: start;
+}
+
+.eyebrow,
+.panel-label {
+  margin: 0 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: "Cormorant Garamond", serif;
+  line-height: 0.98;
+}
+
+h1 {
+  font-size: clamp(2.7rem, 6vw, 5.2rem);
+}
+
+h2 {
+  font-size: clamp(2rem, 4vw, 3.2rem);
+}
+
+h3 {
+  font-size: 1.7rem;
+}
+
+.hero-lead,
+.content-card p,
+.payment-note,
+.info-banner p,
+.summary-card p,
+.highlight-card p {
+  color: var(--muted);
+  line-height: 1.75;
+}
+
+.compact-hero-copy h2 {
+  font-size: clamp(1.35rem, 2.2vw, 1.95rem);
+  line-height: 1.02;
+}
+
+.compact-hero-copy .hero-lead {
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.compact-hero-copy .hero-facts {
+  margin: 14px 0;
+  gap: 10px;
+}
+
+.compact-hero-copy .hero-facts article {
+  padding: 12px 14px;
+}
+
+.hero-facts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 28px 0;
+}
+
+.hero-facts article,
+.highlight-card,
+.summary-card,
+.compact-card {
+  border-radius: 24px;
+}
+
+.hero-facts article {
+  padding: 18px 20px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(36, 24, 28, 0.08);
+}
+
+.hero-facts span,
+.summary-lines span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.cta-row,
+.admin-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.primary-btn,
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  padding: 14px 24px;
+  color: white;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
+  box-shadow: 0 14px 30px rgba(162, 94, 112, 0.26);
+  cursor: pointer;
+}
+
+.secondary-btn {
+  padding: 12px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.45);
+}
+
+.primary-btn:hover,
+.action-btn:hover,
+.secondary-btn:hover {
+  transform: translateY(-1px);
+}
+
+.hero-visual-stack {
+  display: grid;
+  gap: 18px;
+}
+
+.photo-card {
+  overflow: hidden;
+  min-height: 260px;
+  border-radius: 28px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+  background: #ddd;
+}
+
+.photo-tall {
+  min-height: 360px;
+}
+
+.section-grid {
+  margin-top: 34px;
+  grid-template-columns: 1.15fr 0.85fr;
+}
+
+.content-card,
+.info-banner,
+.admin-card,
+.payment-card,
+.summary-card {
+  padding: 24px;
+  border-radius: 28px;
+}
+
+.wide-card {
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.section-head {
+  margin-bottom: 20px;
+}
+
+.steps-section {
+  margin-top: 34px;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.step-card {
+  padding: 22px;
+  border-radius: 24px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: var(--shadow);
+}
+
+.step-card span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  background: rgba(198, 132, 145, 0.18);
+  color: var(--accent-deep);
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.step-card p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.showcase-grid {
+  grid-template-columns: 1fr 1fr;
+  margin-top: 34px;
+  align-items: stretch;
+}
+
+.large-photo {
+  min-height: 520px;
+}
+
+.accent-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+  background: linear-gradient(180deg, rgba(255, 251, 249, 0.86), rgba(246, 234, 238, 0.86));
+}
+
+.clean-list {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.9;
+}
+
+.info-box-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.mini-box {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(36, 24, 28, 0.08);
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.mini-box strong {
+  color: var(--text);
+}
+
+.inline-map-btn {
+  align-self: flex-start;
+}
+
+.inner-hero-grid {
+  margin-top: 28px;
+  grid-template-columns: 1.1fr 0.9fr;
+  align-items: stretch;
+}
+
+.banner-photo {
+  min-height: 300px;
+}
+
+.ticket-layout {
+  margin-top: 28px;
+  grid-template-columns: minmax(0, 1.25fr) minmax(340px, 0.9fr);
+  align-items: start;
+}
+
+.stage-section {
+  padding: 26px;
+  border-radius: 30px;
+}
+
+.stage-labels {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.stage {
+  text-align: center;
+  margin-bottom: 22px;
+  padding: 18px;
+  border-radius: 20px;
+  letter-spacing: 0.3em;
+  color: white;
+  background:
+    linear-gradient(135deg, rgba(162, 94, 112, 0.95), rgba(103, 55, 71, 0.98)),
+    url("assets/images/bale2.jpg") center/cover no-repeat;
+  background-blend-mode: multiply;
+}
+
+.seat-map {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.seat {
+  border: 1px solid rgba(36, 24, 28, 0.08);
+  border-radius: 18px 18px 12px 12px;
+  padding: 14px 0;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--text);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.seat:hover {
+  border-color: var(--accent);
+  background: #fff7f8;
+}
+
+.seat.selected {
+  border-color: var(--accent-deep);
+  background: #f6dce2;
+}
+
+.seat.booked {
+  background: #ddd3d6;
+  color: #8b767d;
+  cursor: not-allowed;
+}
+
+.booking-panel {
+  display: grid;
+  gap: 18px;
+}
+
+.summary-lines {
+  display: grid;
+  gap: 12px;
+}
+
+.summary-lines p {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
+}
+
+.booking-form,
+.receipt-form {
+  display: grid;
+  gap: 14px;
+}
+
+label {
+  display: grid;
+  gap: 8px;
+  font-weight: 600;
+}
+
+input,
+textarea {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text);
+}
+
+input:focus,
+textarea:focus {
+  outline: 2px solid rgba(198, 132, 145, 0.18);
+  border-color: rgba(198, 132, 145, 0.55);
+}
+
+.compact-card {
+  border: 1px solid var(--line);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.hidden {
+  display: none;
+}
+
+.iban-box {
+  padding: 18px;
+  border-radius: 20px;
+  border: 1px dashed rgba(162, 94, 112, 0.35);
+  background: rgba(255, 248, 249, 0.9);
+}
+
+.status-box {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid transparent;
+}
+
+.status-box.pending {
+  color: var(--warning);
+  border-color: rgba(177, 110, 46, 0.18);
+  background: rgba(255, 245, 233, 0.96);
+}
+
+.status-box.success {
+  color: var(--success);
+  border-color: rgba(43, 108, 88, 0.18);
+  background: rgba(237, 248, 244, 0.96);
+}
+
+.status-box.rejected {
+  color: var(--danger);
+  border-color: rgba(151, 58, 69, 0.18);
+  background: rgba(253, 239, 241, 0.96);
+}
+
+.admin-layout {
+  margin-top: 30px;
+}
+
+.strong-banner {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background:
+    linear-gradient(180deg, rgba(255, 249, 250, 0.88), rgba(244, 232, 236, 0.95)),
+    url("assets/images/bale2.jpg") center/cover no-repeat;
+  background-blend-mode: screen;
+}
+
+.admin-list {
+  display: grid;
+  gap: 18px;
+}
+
+.auth-shell {
+  display: grid;
+  place-items: center;
+}
+
+.auth-card {
+  width: min(100%, 460px);
+  display: grid;
+  gap: 14px;
+}
+
+.admin-meta {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  margin-top: 14px;
+}
+
+.action-btn.alt {
+  background: linear-gradient(135deg, #efd8de, #dabcc5);
+  color: var(--text);
+  box-shadow: none;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--muted);
+  padding: 34px;
+}
+
+@media (max-width: 980px) {
+  .hero-grid,
+  .inner-hero-grid,
+  .ticket-layout,
+  .section-grid,
+  .showcase-grid,
+  .steps-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-facts,
+  .info-box-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .photo-tall,
+  .large-photo {
+    min-height: 380px;
+  }
+}
+
+@media (max-width: 720px) {
+  .page-shell {
+    width: min(100% - 20px, 1180px);
+    padding: 16px 0 40px;
+  }
+
+  .hero,
+  .inner-hero,
+  .stage-section,
+  .content-card,
+  .info-banner,
+  .summary-card,
+  .payment-card {
+    padding: 18px;
+    border-radius: 24px;
+  }
+
+  .topbar {
+    margin-bottom: 8px;
+  }
+
+  .brand {
+    width: 82px;
+    height: 82px;
+    padding: 10px;
+  }
+
+  .hero-brand-card {
+    grid-template-columns: 1fr;
+    text-align: center;
+    justify-items: center;
+  }
+
+  .topbar.with-action {
+    align-items: center;
+  }
+
+  .hero-grid,
+  .inner-hero-grid,
+  .ticket-layout,
+  .section-grid,
+  .showcase-grid,
+  .steps-grid {
+    gap: 18px;
+  }
+
+  .glass-panel,
+  .compact-hero-copy,
+  .content-card,
+  .summary-card,
+  .payment-card,
+  .info-banner,
+  .admin-card,
+  .step-card,
+  .stage-section {
+    padding: 16px;
+  }
+
+  .hero-brand-text h1,
+  h1 {
+    font-size: 2rem;
+  }
+
+  .compact-hero-copy h2 {
+    font-size: 1.55rem;
+  }
+
+  h2 {
+    font-size: 1.8rem;
+  }
+
+  h3 {
+    font-size: 1.35rem;
+  }
+
+  .cta-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .primary-btn,
+  .secondary-btn,
+  .action-btn {
+    width: 100%;
+    min-height: 48px;
+    padding: 12px 18px;
+  }
+
+  .photo-card,
+  .banner-photo,
+  .photo-tall,
+  .large-photo {
+    min-height: 220px;
+  }
+
+  .hero-facts article,
+  .mini-box,
+  .step-card {
+    padding: 14px;
+  }
+
+  .seat-map {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .seat {
+    padding: 12px 0;
+    border-radius: 16px 16px 10px 10px;
+  }
+
+  .summary-lines p {
+    display: grid;
+    gap: 4px;
+  }
+
+  .stage-labels {
+    font-size: 0.8rem;
+    gap: 8px;
+  }
+
+  .stage {
+    padding: 14px;
+    margin-bottom: 16px;
+  }
+
+  input,
+  textarea {
+    padding: 13px 14px;
+  }
+
+  .steps-section,
+  .showcase-grid,
+  .section-grid {
+    margin-top: 22px;
+  }
+}
+
+@media (max-width: 420px) {
+  .page-shell {
+    width: calc(100% - 14px);
+  }
+
+  .hero,
+  .inner-hero {
+    padding: 14px;
+    border-radius: 20px;
+  }
+
+  .brand {
+    width: 74px;
+    height: 74px;
+    padding: 9px;
+  }
+
+  .hero-brand-mark {
+    width: 78px;
+    height: 78px;
+    padding: 8px;
+  }
+
+  .topbar.with-action {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .hero-brand-text h1,
+  h1 {
+    font-size: 1.75rem;
+  }
+
+  .compact-hero-copy h2 {
+    font-size: 1.35rem;
+  }
+
+  .eyebrow,
+  .panel-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+  }
+
+  .seat-map {
+    gap: 8px;
+  }
+}

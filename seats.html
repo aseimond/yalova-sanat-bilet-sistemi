@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bilet Al | Yalova Sanat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body data-page="seats">
+  <div class="site-bg"></div>
+  <div class="page-shell">
+    <header class="inner-hero">
+      <nav class="topbar">
+        <a class="brand" href="index.html" aria-label="Yalova Sanat Ana Sayfa">
+          <img class="brand-logo" src="assets/logo.jpeg" alt="Yalova Sanat Bale ve Dans Kursu logosu" />
+        </a>
+      </nav>
+
+      <div class="inner-hero-grid">
+        <div class="glass-panel">
+          <p class="eyebrow">Bilet Alımı</p>
+          <h1>Koltuk seç, ödemenı yap, dekontu yükle.</h1>
+          <p class="hero-lead">
+            Bu sayfa işlemi hızlıca tamamlayabilmen için sade tutuldu. Önce koltuğunu seç, sonra formu doldur.
+            Sistem sana ödeme için özel bir referans kodu verecek.
+          </p>
+        </div>
+        <div class="photo-card banner-photo">
+          <img src="assets/images/bale3.jpg" alt="Sahnede bekleyen çocuk balerinler" />
+        </div>
+      </div>
+    </header>
+
+    <main class="ticket-layout">
+      <section class="stage-section">
+        <div class="stage-labels">
+          <span>Sol Blok</span>
+          <span>Sahne Önü</span>
+          <span>Sağ Blok</span>
+        </div>
+        <div class="stage">SAHNE</div>
+        <div id="seat-map" class="seat-map" aria-label="Koltuk Haritası"></div>
+      </section>
+
+      <aside class="booking-panel">
+        <div class="summary-card">
+          <p class="panel-label">Seçim Özeti</p>
+          <h2 id="selected-seat-label">Henüz koltuk seçilmedi</h2>
+          <div class="summary-lines">
+            <p><span>Etkinlik</span><strong>Yıl Sonu Bale Gecesi</strong></p>
+            <p><span>Bilet Bedeli</span><strong>500 TL</strong></p>
+            <p><span>Ödeme Tipi</span><strong>Havale / EFT</strong></p>
+          </div>
+          <div id="hold-status" class="status-box hidden"></div>
+        </div>
+
+        <form id="booking-form" class="booking-form content-card compact-card">
+          <p class="panel-label">Rezervasyon Bilgisi</p>
+          <label>
+            Ad Soyad
+            <input type="text" name="name" placeholder="Adınız Soyadınız" required />
+          </label>
+          <label>
+            Telefon
+            <input type="tel" name="phone" placeholder="05xx xxx xx xx" required />
+          </label>
+          <label>
+            E-posta
+            <input type="email" name="email" placeholder="ornek@mail.com" required />
+          </label>
+          <button type="submit" class="primary-btn full-width">Rezervasyonu Oluştur</button>
+        </form>
+
+        <section id="payment-section" class="payment-card hidden" aria-live="polite">
+          <p class="panel-label">Ödeme Bilgisi</p>
+          <div class="iban-box">
+            <p><strong>Alıcı:</strong> Yalova Sanat Bale & Dans Kursu</p>
+            <p><strong>IBAN:</strong> TR12 3456 7890 1234 5678 9012 34</p>
+            <p><strong>Tutar:</strong> 500 TL</p>
+            <p><strong>Açıklama:</strong> <span id="payment-ref"></span></p>
+          </div>
+          <p class="payment-note">
+            Lütfen banka açıklamasına ekranda görünen referans kodunu yazın. Böylece dekont ile ödeme kaydı kolayca eşleşir.
+          </p>
+
+          <form id="receipt-form" class="receipt-form">
+            <label>
+              Dekont Dosyası
+              <input type="file" name="receipt" accept=".jpg,.jpeg,.png,.pdf" required />
+            </label>
+            <label>
+              Transfer Notu
+              <textarea name="note" rows="3" placeholder="Örn: Havale 14:42'de gönderildi, açıklamaya referans yazıldı."></textarea>
+            </label>
+            <button type="submit" class="primary-btn full-width">Dekontu Gönder</button>
+          </form>
+          <div id="receipt-status" class="status-box hidden"></div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
