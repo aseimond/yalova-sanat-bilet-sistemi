@@ -209,6 +209,22 @@ function getStoredReceiptFileName(receiptPath) {
   return path.basename(receiptPath || "");
 }
 
+async function removeReceiptFile(receiptPath) {
+  const fileName = getStoredReceiptFileName(receiptPath);
+  if (!fileName) {
+    return;
+  }
+
+  const filePath = path.join(UPLOADS_DIR, fileName);
+  try {
+    await fsp.unlink(filePath);
+  } catch (error) {
+    if (error.code !== "ENOENT") {
+      throw error;
+    }
+  }
+}
+
 function createReferenceCode(seatLabel) {
   const base = Math.random().toString(36).slice(2, 7).toUpperCase();
   return `BALO-${seatLabel}-${base}`;
@@ -593,6 +609,47 @@ async function handleApi(request, response, url) {
     return sendJson(response, 200, {
       reservation: adminReservationShape(updatedReservation),
       notification
+    });
+  }
+
+  if (request.method === "DELETE" && /^\/api\/admin\/reservations\/[^/]+$/.test(url.pathname)) {
+    if (!requireAdmin(request, response)) {
+      return;
+    }
+
+    const reservationId = url.pathname.split("/")[4];
+    const reservation = getReservationById(reservationId);
+    if (!reservation) {
+      return sendJson(response, 404, { error: "Rezervasyon bulunamadı." });
+    }
+
+    await removeReceiptFile(reservation.receipt_path);
+    db.prepare("DELETE FROM reservations WHERE id = ?").run(reservationId);
+    return sendJson(response, 200, { ok: true });
+  }
+
+  if (request.method === "POST" && url.pathname === "/api/admin/reservations/cleanup") {
+    if (!requireAdmin(request, response)) {
+      return;
+    }
+
+    const cleanupTargets = db.prepare(`
+      SELECT * FROM reservations
+      WHERE status IN ('rejected', 'expired')
+    `).all();
+
+    for (const reservation of cleanupTargets) {
+      await removeReceiptFile(reservation.receipt_path);
+    }
+
+    db.prepare(`
+      DELETE FROM reservations
+      WHERE status IN ('rejected', 'expired')
+    `).run();
+
+    return sendJson(response, 200, {
+      ok: true,
+      deletedCount: cleanupTargets.length
     });
   }
 

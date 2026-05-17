@@ -612,6 +612,12 @@ textarea:focus {
   gap: 18px;
 }
 
+.admin-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 18px;
+}
+
 .auth-shell {
   display: grid;
   place-items: center;

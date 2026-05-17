@@ -305,7 +305,14 @@ function buildAdminCard(reservation) {
     await updateReservationStatus(reservation.id, "rejected");
   });
 
-  actions.append(approve, reject);
+  const remove = document.createElement("button");
+  remove.className = "action-btn alt";
+  remove.textContent = "Kaydı Sil";
+  remove.addEventListener("click", async () => {
+    await deleteReservation(reservation.id);
+  });
+
+  actions.append(approve, reject, remove);
   card.append(currentStatus, actions);
   return card;
 }
@@ -317,6 +324,7 @@ async function renderAdminPage() {
   const loginForm = document.querySelector("#admin-login-form");
   const loginStatus = document.querySelector("#admin-login-status");
   const logoutButton = document.querySelector("#admin-logout");
+  const cleanupButton = document.querySelector("#cleanup-test-records");
 
   if (!list) {
     return;
@@ -397,6 +405,24 @@ async function renderAdminPage() {
     list.innerHTML = "";
   });
 
+  cleanupButton?.addEventListener("click", async () => {
+    const confirmed = window.confirm("Reddedilmiş ve süresi dolmuş test kayıtlarını temizlemek istiyor musun?");
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      const result = await requestJson("/api/admin/reservations/cleanup", {
+        method: "POST",
+        body: JSON.stringify({})
+      });
+      alert(`${result.deletedCount} kayıt temizlendi.`);
+      await renderAdminPage();
+    } catch (error) {
+      alert(error.message);
+    }
+  });
+
   await checkSession();
 }
 
@@ -409,6 +435,22 @@ async function updateReservationStatus(id, status) {
     if (result.notification?.reason) {
       alert(result.notification.reason);
     }
+    await renderAdminPage();
+  } catch (error) {
+    alert(error.message);
+  }
+}
+
+async function deleteReservation(id) {
+  const confirmed = window.confirm("Bu kaydı silmek istiyor musun?");
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    await requestJson(`/api/admin/reservations/${id}`, {
+      method: "DELETE"
+    });
     await renderAdminPage();
   } catch (error) {
     alert(error.message);
