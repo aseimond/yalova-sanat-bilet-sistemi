@@ -205,6 +205,10 @@ function sanitizeFileName(name) {
   return name.replace(/[^a-zA-Z0-9._-]/g, "-");
 }
 
+function getStoredReceiptFileName(receiptPath) {
+  return path.basename(receiptPath || "");
+}
+
 function createReferenceCode(seatLabel) {
   const base = Math.random().toString(36).slice(2, 7).toUpperCase();
   return `BALO-${seatLabel}-${base}`;
@@ -474,8 +478,7 @@ async function handleApi(request, response, url) {
     try {
       const parsedReceipt = validateReceiptPayload(receiptName, receiptContent);
       const fileName = `${reservation.reference}-${Date.now()}${parsedReceipt.extension}`;
-      const receiptPath = path.join("uploads", fileName);
-      await fsp.writeFile(path.join(ROOT, receiptPath), parsedReceipt.buffer);
+      await fsp.writeFile(path.join(UPLOADS_DIR, fileName), parsedReceipt.buffer);
 
       db.prepare(`
         UPDATE reservations
@@ -486,7 +489,7 @@ async function handleApi(request, response, url) {
         new Date().toLocaleString("tr-TR"),
         note || "",
         "pending",
-        receiptPath,
+        fileName,
         reservationId
       );
 
@@ -604,7 +607,7 @@ async function handleApi(request, response, url) {
       return sendText(response, 404, "Dekont bulunamadı.");
     }
 
-    const filePath = path.join(ROOT, reservation.receipt_path);
+    const filePath = path.join(UPLOADS_DIR, getStoredReceiptFileName(reservation.receipt_path));
     const ext = path.extname(filePath).toLowerCase();
     const contentType = MIME_TYPES[ext] || "application/octet-stream";
     response.writeHead(200, {
