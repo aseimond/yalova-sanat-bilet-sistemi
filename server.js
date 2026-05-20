@@ -18,6 +18,7 @@ const LOCAL_CONFIG_FILE = path.join(ROOT, "config.local.json");
 const BOOKED_BY_DEFAULT = ["A2", "A5", "B4", "C1"];
 const TICKET_PRICE = 500;
 const HOLD_MINUTES = 10;
+const MAX_TICKETS_PER_ORDER = 5;
 const ALLOWED_RECEIPT_MIME = {
   "application/pdf": ".pdf",
   "image/jpeg": ".jpg",
@@ -131,6 +132,8 @@ async function ensureStorage() {
       email TEXT NOT NULL,
       reference TEXT NOT NULL UNIQUE,
       amount INTEGER NOT NULL,
+      seats_text TEXT NOT NULL DEFAULT '',
+      seat_count INTEGER NOT NULL DEFAULT 1,
       status TEXT NOT NULL,
       created_at TEXT NOT NULL,
       expires_at TEXT NOT NULL DEFAULT '',
@@ -154,6 +157,29 @@ function ensureReservationColumns() {
   if (!columns.includes("expires_at")) {
     db.exec("ALTER TABLE reservations ADD COLUMN expires_at TEXT NOT NULL DEFAULT ''");
   }
+
+  if (!columns.includes("seats_text")) {
+    db.exec("ALTER TABLE reservations ADD COLUMN seats_text TEXT NOT NULL DEFAULT ''");
+  }
+
+  if (!columns.includes("seat_count")) {
+    db.exec("ALTER TABLE reservations ADD COLUMN seat_count INTEGER NOT NULL DEFAULT 1");
+  }
+
+  db.exec(`
+    UPDATE reservations
+    SET seats_text = seat
+    WHERE seats_text = '' OR seats_text IS NULL
+  `);
+
+  db.exec(`
+    UPDATE reservations
+    SET seat_count = CASE
+      WHEN seats_text = '' THEN 1
+      ELSE LENGTH(seats_text) - LENGTH(REPLACE(seats_text, ',', '')) + 1
+    END
+    WHERE seat_count IS NULL OR seat_count < 1
+  `);
 }
 
 async function migrateLegacyReservations() {
@@ -173,8 +199,8 @@ async function migrateLegacyReservations() {
   const insert = db.prepare(`
     INSERT INTO reservations (
       id, seat, name, phone, email, reference, amount, status, created_at,
-      expires_at, receipt_name, receipt_uploaded_at, note, receipt_path
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      seats_text, seat_count, expires_at, receipt_name, receipt_uploaded_at, note, receipt_path
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
 
   const transaction = db.transaction((items) => {
@@ -187,6 +213,8 @@ async function migrateLegacyReservations() {
         item.email,
         item.reference,
         item.amount || 950,
+        item.seatsText || item.seat || "",
+        item.seatCount || 1,
         item.status || "pending",
         item.createdAt || new Date().toLocaleString("tr-TR"),
         item.expiresAt || "",
@@ -246,9 +274,12 @@ function sendText(response, statusCode, message) {
 }
 
 function publicReservationShape(item) {
+  const seats = parseSeatsText(item.seats_text || item.seat || "");
   return {
     id: item.id,
     seat: item.seat,
+    seats,
+    seatCount: item.seat_count || seats.length || 1,
     name: item.name,
     phone: item.phone,
     email: item.email,
@@ -347,20 +378,31 @@ function getReservationById(id) {
   return db.prepare("SELECT * FROM reservations WHERE id = ?").get(id);
 }
 
-function isSeatBlocked(seat) {
+function parseSeatsText(text) {
+  return String(text || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function isSeatBlocked(seats) {
   releaseExpiredReservations();
-  if (BOOKED_BY_DEFAULT.includes(seat)) {
-    return true;
+  for (const seat of seats) {
+    if (BOOKED_BY_DEFAULT.includes(seat)) {
+      return true;
+    }
   }
 
-  const blocked = db.prepare(`
-    SELECT COUNT(*) AS count
+  const reservations = db.prepare(`
+    SELECT seats_text, seat
     FROM reservations
-    WHERE seat = ?
-      AND status IN ('awaiting_payment', 'pending', 'approved')
-  `).get(seat);
+    WHERE status IN ('awaiting_payment', 'pending', 'approved')
+  `).all();
 
-  return blocked.count > 0;
+  return reservations.some((reservation) => {
+    const reservedSeats = parseSeatsText(reservation.seats_text || reservation.seat);
+    return seats.some((seat) => reservedSeats.includes(seat));
+  });
 }
 
 function releaseExpiredReservations() {
@@ -413,7 +455,8 @@ async function handleApi(request, response, url) {
     return sendJson(response, 200, {
       ticketPrice: TICKET_PRICE,
       bookedByDefault: BOOKED_BY_DEFAULT,
-      holdMinutes: HOLD_MINUTES
+      holdMinutes: HOLD_MINUTES,
+      maxTicketsPerOrder: MAX_TICKETS_PER_ORDER
     });
   }
 
@@ -421,7 +464,7 @@ async function handleApi(request, response, url) {
     const reservations = getAllReservations();
     const blockedSeats = reservations
       .filter((item) => ["awaiting_payment", "pending", "approved"].includes(item.status))
-      .map((item) => item.seat);
+      .flatMap((item) => parseSeatsText(item.seats_text || item.seat));
 
     return sendJson(response, 200, {
       blockedSeats: [...new Set([...BOOKED_BY_DEFAULT, ...blockedSeats])]
@@ -430,24 +473,30 @@ async function handleApi(request, response, url) {
 
   if (request.method === "POST" && url.pathname === "/api/reservations") {
     const body = await parseJsonBody(request);
-    const { name, phone, email, seat } = body;
+    const { name, phone, email } = body;
+    const seats = Array.isArray(body.seats) ? body.seats.map((item) => String(item).trim()).filter(Boolean) : [];
 
-    if (!name || !phone || !email || !seat) {
+    if (!name || !phone || !email || !seats.length) {
       return sendJson(response, 400, { error: "Eksik rezervasyon bilgisi." });
     }
 
-    if (isSeatBlocked(seat)) {
-      return sendJson(response, 409, { error: "Bu koltuk dolu veya incelemede." });
+    if (seats.length > MAX_TICKETS_PER_ORDER) {
+      return sendJson(response, 400, { error: `Bir sipariste en fazla ${MAX_TICKETS_PER_ORDER} bilet alinabilir.` });
+    }
+
+    if (isSeatBlocked(seats)) {
+      return sendJson(response, 409, { error: "Seçtiğin koltuklardan biri dolu veya incelemede." });
     }
 
     const reservation = {
       id: randomUUID(),
-      seat,
+      seat: seats[0],
+      seats,
       name,
       phone,
       email,
-      reference: createReferenceCode(seat),
-      amount: TICKET_PRICE,
+      reference: createReferenceCode(seats[0]),
+      amount: TICKET_PRICE * seats.length,
       status: "awaiting_payment",
       createdAt: new Date().toLocaleString("tr-TR"),
       expiresAt: new Date(Date.now() + HOLD_MINUTES * 60 * 1000).toISOString()
@@ -455,8 +504,8 @@ async function handleApi(request, response, url) {
 
     db.prepare(`
       INSERT INTO reservations (
-        id, seat, name, phone, email, reference, amount, status, created_at, expires_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        id, seat, name, phone, email, reference, amount, seats_text, seat_count, status, created_at, expires_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       reservation.id,
       reservation.seat,
@@ -465,6 +514,8 @@ async function handleApi(request, response, url) {
       reservation.email,
       reservation.reference,
       reservation.amount,
+      reservation.seats.join(","),
+      reservation.seats.length,
       reservation.status,
       reservation.createdAt,
       reservation.expiresAt

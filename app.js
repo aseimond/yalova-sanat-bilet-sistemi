@@ -1,10 +1,57 @@
 const TICKET_PRICE = 500;
 const HOLD_MINUTES = 10;
-const seatLabels = Array.from({ length: 24 }, (_, index) => {
-  const row = String.fromCharCode(65 + Math.floor(index / 6));
-  const number = (index % 6) + 1;
-  return `${row}${number}`;
-});
+const MAX_TICKETS_PER_ORDER = 5;
+const LEFT_RIGHT_ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "İ", "J", "K", "L", "M", "N", "O", "Ö", "P"];
+const CENTER_ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "İ", "J", "K", "L", "M", "N", "O", "Ö"];
+
+function buildSeatLayout() {
+  const leftSeats = [];
+  const centerSeats = [];
+  const rightSeats = [];
+  let leftNumber = 1;
+  let centerNumber = 1;
+  let rightNumber = 1;
+
+  LEFT_RIGHT_ROWS.forEach((row) => {
+    for (let i = 0; i < 5; i += 1) {
+      leftSeats.push({
+        id: `L-${leftNumber}`,
+        display: String(leftNumber),
+        row,
+        block: "left"
+      });
+      leftNumber += 1;
+    }
+  });
+
+  CENTER_ROWS.forEach((row) => {
+    for (let i = 0; i < 22; i += 1) {
+      centerSeats.push({
+        id: `C-${centerNumber}`,
+        display: String(centerNumber),
+        row,
+        block: "center"
+      });
+      centerNumber += 1;
+    }
+  });
+
+  LEFT_RIGHT_ROWS.forEach((row) => {
+    for (let i = 0; i < 5; i += 1) {
+      rightSeats.push({
+        id: `R-${rightNumber}`,
+        display: String(rightNumber),
+        row,
+        block: "right"
+      });
+      rightNumber += 1;
+    }
+  });
+
+  return { leftSeats, centerSeats, rightSeats };
+}
+
+const seatLayout = buildSeatLayout();
 
 const state = {
   reservations: [],
@@ -12,7 +59,8 @@ const state = {
   bookedByDefault: ["A2", "A5", "B4", "C1"],
   blockedSeats: ["A2", "A5", "B4", "C1"],
   holdMinutes: HOLD_MINUTES,
-  holdTimerId: null
+  holdTimerId: null,
+  maxTicketsPerOrder: MAX_TICKETS_PER_ORDER
 };
 
 async function requestJson(url, options = {}) {
@@ -46,6 +94,7 @@ async function loadSharedState() {
 
   state.bookedByDefault = config.bookedByDefault || [];
   state.holdMinutes = config.holdMinutes || HOLD_MINUTES;
+  state.maxTicketsPerOrder = config.maxTicketsPerOrder || MAX_TICKETS_PER_ORDER;
   state.blockedSeats = availability.blockedSeats || [...state.bookedByDefault];
 }
 
@@ -127,27 +176,68 @@ function startHoldTimer(statusBox, map, selectedSeatRef) {
   state.holdTimerId = setInterval(tick, 1000);
 }
 
-function renderSeatButtons(map, selectedSeat) {
+function formatCurrency(amount) {
+  return `${amount} TL`;
+}
+
+function groupSeatsByRow(seats, rowLabels) {
+  return rowLabels.map((row) => ({
+    row,
+    seats: seats.filter((seat) => seat.row === row)
+  }));
+}
+
+function renderBlock(blockName, title, seats, rowLabels, selectedSeats, bookedSeats) {
+  const wrapper = document.createElement("section");
+  wrapper.className = `seat-layout-block ${blockName}-block`;
+
+  const header = document.createElement("div");
+  header.className = `seat-block-header ${blockName}-block`;
+  header.textContent = title;
+  wrapper.appendChild(header);
+
+  groupSeatsByRow(seats, rowLabels).forEach(({ row, seats: rowSeats }) => {
+    const rowElement = document.createElement("div");
+    rowElement.className = `seat-row ${blockName}-row`;
+
+    const label = document.createElement("span");
+    label.className = "seat-row-label";
+    label.textContent = row;
+    rowElement.appendChild(label);
+
+    rowSeats.forEach((seat) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "seat compact-seat";
+      button.dataset.seatId = seat.id;
+      button.textContent = seat.display;
+
+      if (bookedSeats.has(seat.id)) {
+        button.classList.add("booked");
+        button.disabled = true;
+      }
+
+      if (selectedSeats.includes(seat.id)) {
+        button.classList.add("selected");
+      }
+
+      rowElement.appendChild(button);
+    });
+
+    wrapper.appendChild(rowElement);
+  });
+
+  return wrapper;
+}
+
+function renderSeatButtons(map, selectedSeats) {
   const bookedSeats = getBookedSeats();
   map.innerHTML = "";
-
-  seatLabels.forEach((label) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "seat";
-    button.textContent = label;
-
-    if (bookedSeats.has(label)) {
-      button.classList.add("booked");
-      button.disabled = true;
-    }
-
-    if (selectedSeat === label) {
-      button.classList.add("selected");
-    }
-
-    map.appendChild(button);
-  });
+  map.append(
+    renderBlock("left", "Sol Blok", seatLayout.leftSeats, LEFT_RIGHT_ROWS, selectedSeats, bookedSeats),
+    renderBlock("center", "Orta Blok", seatLayout.centerSeats, CENTER_ROWS, selectedSeats, bookedSeats),
+    renderBlock("right", "Sağ Blok", seatLayout.rightSeats, LEFT_RIGHT_ROWS, selectedSeats, bookedSeats)
+  );
 }
 
 async function renderSeatsPage() {
@@ -156,9 +246,12 @@ async function renderSeatsPage() {
   const paymentSection = document.querySelector("#payment-section");
   const paymentRef = document.querySelector("#payment-ref");
   const seatLabel = document.querySelector("#selected-seat-label");
+  const seatList = document.querySelector("#selected-seat-list");
   const receiptForm = document.querySelector("#receipt-form");
   const receiptStatus = document.querySelector("#receipt-status");
   const holdStatus = document.querySelector("#hold-status");
+  const ticketTotal = document.querySelector("#ticket-total");
+  const paymentTotal = document.querySelector("#payment-total");
 
   if (!map || !bookingForm || !paymentSection || !receiptForm) {
     return;
@@ -166,8 +259,24 @@ async function renderSeatsPage() {
 
   await loadSharedState();
 
-  const selectedSeatRef = { value: null };
-  renderSeatButtons(map, selectedSeatRef.value);
+  const selectedSeatsRef = { value: [] };
+  renderSeatButtons(map, selectedSeatsRef.value);
+
+  function syncSelectionSummary() {
+    const count = selectedSeatsRef.value.length;
+    if (!count) {
+      setText(seatLabel, "Henüz koltuk seçilmedi");
+      setText(seatList, `Aynı anda en fazla ${state.maxTicketsPerOrder} koltuk seçebilirsin.`);
+    } else {
+      setText(seatLabel, `${count} koltuk seçildi`);
+      setText(seatList, `Seçilen koltuklar: ${selectedSeatsRef.value.join(", ")}`);
+    }
+
+    setText(ticketTotal, formatCurrency(TICKET_PRICE * Math.max(count, 1)));
+    setText(paymentTotal, formatCurrency(TICKET_PRICE * Math.max(count, 1)));
+  }
+
+  syncSelectionSummary();
 
   map.addEventListener("click", (event) => {
     const button = event.target.closest(".seat");
@@ -175,16 +284,28 @@ async function renderSeatsPage() {
       return;
     }
 
-    selectedSeatRef.value = button.textContent.trim();
-    setText(seatLabel, `${selectedSeatRef.value} koltuğu seçildi`);
-    renderSeatButtons(map, selectedSeatRef.value);
+    const seatId = button.dataset.seatId;
+    const selected = selectedSeatsRef.value;
+
+    if (selected.includes(seatId)) {
+      selectedSeatsRef.value = selected.filter((item) => item !== seatId);
+    } else {
+      if (selected.length >= state.maxTicketsPerOrder) {
+        alert(`Bir kişi en fazla ${state.maxTicketsPerOrder} bilet alabilir.`);
+        return;
+      }
+      selectedSeatsRef.value = [...selected, seatId];
+    }
+
+    syncSelectionSummary();
+    renderSeatButtons(map, selectedSeatsRef.value);
   });
 
   bookingForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    if (!selectedSeatRef.value) {
-      alert("Lütfen önce bir koltuk seçin.");
+    if (!selectedSeatsRef.value.length) {
+      alert("Lütfen önce en az bir koltuk seç.");
       return;
     }
 
@@ -197,16 +318,19 @@ async function renderSeatsPage() {
           name: formData.get("name"),
           phone: formData.get("phone"),
           email: formData.get("email"),
-          seat: selectedSeatRef.value
+          seats: selectedSeatsRef.value
         })
       });
 
       await loadSharedState();
-      renderSeatButtons(map, selectedSeatRef.value);
+      renderSeatButtons(map, selectedSeatsRef.value);
+      syncSelectionSummary();
 
       paymentSection.classList.remove("hidden");
       setText(paymentRef, state.activeReservation.reference);
-      startHoldTimer(holdStatus, map, selectedSeatRef);
+      setText(paymentTotal, formatCurrency(state.activeReservation.amount));
+      setText(ticketTotal, formatCurrency(state.activeReservation.amount));
+      startHoldTimer(holdStatus, map, selectedSeatsRef);
       paymentSection.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (error) {
       alert(error.message);
@@ -243,7 +367,7 @@ async function renderSeatsPage() {
       state.activeReservation = reservation;
       stopHoldTimer();
       await loadSharedState();
-      renderSeatButtons(map, selectedSeatRef.value);
+      renderSeatButtons(map, selectedSeatsRef.value);
 
       receiptStatus.className = "status-box pending";
       receiptStatus.innerHTML = `
@@ -267,7 +391,7 @@ function buildAdminCard(reservation) {
     <p class="panel-label">${formatStatus(reservation.status)}</p>
     <h2>${reservation.name}</h2>
     <div class="admin-meta">
-      <span>Koltuk: <strong>${reservation.seat}</strong></span>
+      <span>Koltuklar: <strong>${(reservation.seats || [reservation.seat]).join(", ")}</strong></span>
       <span>Referans: <strong>${reservation.reference}</strong></span>
       <span>İletişim: ${reservation.phone} / ${reservation.email}</span>
       <span>Dekont: ${reservation.receiptName || "Yok"}</span>

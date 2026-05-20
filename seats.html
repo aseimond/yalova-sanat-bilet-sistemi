@@ -49,9 +49,10 @@
         <div class="summary-card">
           <p class="panel-label">Seçim Özeti</p>
           <h2 id="selected-seat-label">Henüz koltuk seçilmedi</h2>
+          <p id="selected-seat-list" class="selected-seat-list">Aynı anda en fazla 5 koltuk seçebilirsin.</p>
           <div class="summary-lines">
             <p><span>Etkinlik</span><strong>Yıl Sonu Bale Gecesi</strong></p>
-            <p><span>Bilet Bedeli</span><strong>500 TL</strong></p>
+            <p><span>Bilet Bedeli</span><strong id="ticket-total">500 TL</strong></p>
             <p><span>Ödeme Tipi</span><strong>Havale / EFT</strong></p>
           </div>
           <div id="hold-status" class="status-box hidden"></div>
@@ -79,7 +80,7 @@
           <div class="iban-box">
             <p><strong>Alıcı:</strong> Yalova Sanat Bale & Dans Kursu</p>
             <p><strong>IBAN:</strong> TR12 3456 7890 1234 5678 9012 34</p>
-            <p><strong>Tutar:</strong> 500 TL</p>
+            <p><strong>Tutar:</strong> <span id="payment-total">500 TL</span></p>
             <p><strong>Açıklama:</strong> <span id="payment-ref"></span></p>
           </div>
           <p class="payment-note">
