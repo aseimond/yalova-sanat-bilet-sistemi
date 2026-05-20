@@ -474,8 +474,9 @@ h3 {
 
 .seat-map {
   display: grid;
-  grid-template-columns: minmax(180px, 0.6fr) minmax(520px, 1.5fr) minmax(180px, 0.6fr);
+  grid-template-columns: minmax(0, 220px) minmax(0, 1fr) minmax(0, 220px);
   gap: 18px;
+  align-items: start;
 }
 
 .seat {
@@ -501,6 +502,7 @@ h3 {
 .seat-layout-block {
   display: grid;
   gap: 12px;
+  min-width: 0;
 }
 
 .seat-layout-block.center-block {
@@ -536,11 +538,12 @@ h3 {
 
 .seat-row.left-row,
 .seat-row.right-row {
-  grid-template-columns: 24px repeat(5, minmax(0, 1fr));
+  grid-template-columns: 24px repeat(5, 38px);
 }
 
 .seat-row.center-row {
-  grid-template-columns: 24px repeat(22, minmax(0, 1fr));
+  grid-template-columns: 24px repeat(22, 38px);
+  min-width: max-content;
 }
 
 .seat-row-label {
@@ -553,6 +556,18 @@ h3 {
   padding: 8px 0;
   border-radius: 14px 14px 8px 8px;
   font-size: 0.78rem;
+  min-width: 38px;
+}
+
+.seat-layout-block.left-block,
+.seat-layout-block.right-block {
+  justify-self: center;
+}
+
+.seat-layout-block.center-block {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 6px;
 }
 
 .selected-seat-list {
@@ -845,12 +860,12 @@ textarea:focus {
 
   .seat-row.left-row,
   .seat-row.right-row {
-    grid-template-columns: 24px repeat(5, minmax(0, 1fr));
+    grid-template-columns: 24px repeat(5, 38px);
+    min-width: max-content;
   }
 
   .seat-row.center-row {
-    overflow-x: auto;
-    padding-bottom: 6px;
+    min-width: max-content;
   }
 
   .summary-lines p {
