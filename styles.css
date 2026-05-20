@@ -441,13 +441,14 @@ h3 {
 
 .ticket-layout {
   margin-top: 28px;
-  grid-template-columns: minmax(0, 1.25fr) minmax(340px, 0.9fr);
+  grid-template-columns: 1fr;
   align-items: start;
 }
 
 .stage-section {
   padding: 26px;
   border-radius: 30px;
+  max-width: 100%;
 }
 
 .stage-labels {
@@ -585,6 +586,7 @@ h3 {
 .booking-panel {
   display: grid;
   gap: 18px;
+  max-width: 860px;
 }
 
 .summary-lines {
@@ -729,7 +731,6 @@ textarea:focus {
 @media (max-width: 980px) {
   .hero-grid,
   .inner-hero-grid,
-  .ticket-layout,
   .section-grid,
   .showcase-grid,
   .steps-grid {
