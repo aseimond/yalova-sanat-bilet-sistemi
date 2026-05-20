@@ -443,12 +443,20 @@ h3 {
   margin-top: 28px;
   grid-template-columns: 1fr;
   align-items: start;
+  gap: 32px;
 }
 
 .stage-section {
+  display: grid;
+  gap: 16px;
   padding: 26px;
   border-radius: 30px;
   max-width: 100%;
+}
+
+.stage-note {
+  margin: -6px 0 2px;
+  max-width: 780px;
 }
 
 .stage-labels {
@@ -473,11 +481,19 @@ h3 {
   background-blend-mode: multiply;
 }
 
+.seat-map-shell {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 10px 0 8px;
+}
+
 .seat-map {
   display: grid;
   grid-template-columns: minmax(0, 220px) minmax(0, 1fr) minmax(0, 220px);
   gap: 18px;
   align-items: start;
+  width: max-content;
+  min-width: 100%;
 }
 
 .seat {
@@ -586,7 +602,8 @@ h3 {
 .booking-panel {
   display: grid;
   gap: 18px;
-  max-width: 860px;
+  width: 100%;
+  max-width: 980px;
 }
 
 .summary-lines {
@@ -852,6 +869,7 @@ textarea:focus {
   .seat-map {
     grid-template-columns: 1fr;
     gap: 14px;
+    min-width: max-content;
   }
 
   .seat {
