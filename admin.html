@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Yönetim Paneli | Yalova Sanat</title>
+  <title>Yonetim Paneli | Yalova Sanat</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -17,23 +17,22 @@
         <a class="brand" href="index.html" aria-label="Yalova Sanat Ana Sayfa">
           <img class="brand-logo" src="assets/logo.jpeg" alt="Yalova Sanat Bale ve Dans Kursu logosu" />
         </a>
-        <button id="admin-logout" class="secondary-btn hidden" type="button">Çıkış Yap</button>
+        <button id="admin-logout" class="secondary-btn hidden" type="button">Cikis Yap</button>
       </nav>
 
       <div class="inner-hero-grid">
         <div class="glass-panel">
-          <p class="eyebrow">Yönetim Paneli</p>
-          <h1>Dekont geldi mi, ödeme eşleşti mi, bilet onaylandı mı?</h1>
+          <p class="eyebrow">Yonetim Paneli</p>
+          <h1>Rezervasyonlar geldi mi, koltuklar ayrildi mi, kayitlar guncel mi?</h1>
           <p class="hero-lead">
-            Bu ekran okul tarafı için hazırlandı. Kullanıcı dekont gönderdiğinde kayıt burada görünür.
-            Gerçek banka hareketi ile dekont eşleştiğinde onay verilir.
+            Bu ekran okul yonetimi icin hazirlandi. Kullanici rezervasyon olusturdugunda kayit burada gorunur.
+            Gerekirse rezervasyon onaylanir, reddedilir veya temizlenir.
           </p>
         </div>
         <div class="info-banner strong-banner">
-          <strong>Önemli Not</strong>
+          <strong>Onemli Not</strong>
           <p>
-            Bu sürümde banka entegrasyonu yoktur. Sistem dekontun yüklendiğini takip eder;
-            paranın gerçekten hesaba geçtiği kontrolü yönetim tarafından yapılmalıdır.
+            Bu surumde odeme adimi yoktur. Sistem sadece koltuk rezervasyonlarini toplar ve yonetim panelinde listeler.
           </p>
         </div>
       </div>
@@ -42,24 +41,24 @@
     <main class="admin-layout">
       <section id="admin-login-section" class="auth-shell">
         <form id="admin-login-form" class="content-card auth-card">
-          <p class="panel-label">Admin Girişi</p>
-          <h2>Yönetim paneline giriş yapın</h2>
+          <p class="panel-label">Admin Girisi</p>
+          <h2>Yonetim paneline giris yapin</h2>
           <label>
-            Kullanıcı Adı
+            Kullanici Adi
             <input type="text" name="username" placeholder="admin" required />
           </label>
           <label>
-            Şifre
-            <input type="password" name="password" placeholder="Şifreniz" required />
+            Sifre
+            <input type="password" name="password" placeholder="Sifreniz" required />
           </label>
-          <button type="submit" class="primary-btn full-width">Giriş Yap</button>
+          <button type="submit" class="primary-btn full-width">Giris Yap</button>
           <div id="admin-login-status" class="status-box hidden"></div>
         </form>
       </section>
 
       <section id="admin-panel-section" class="hidden">
         <div class="admin-toolbar">
-          <button id="cleanup-test-records" class="secondary-btn" type="button">Test Kayıtlarını Temizle</button>
+          <button id="cleanup-test-records" class="secondary-btn" type="button">Test Kayitlarini Temizle</button>
         </div>
         <section id="admin-list" class="admin-list"></section>
       </section>
