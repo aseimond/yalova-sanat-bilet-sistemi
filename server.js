@@ -303,37 +303,38 @@ function adminReservationShape(item) {
 
 function buildNotificationContent(reservation, status) {
   if (status === "approved") {
+    const seats = parseSeatsText(reservation.seats_text || reservation.seat).join(", ");
     return {
-      subject: "Bilet odemeniz onaylandi",
+      subject: "Rezervasyonunuz onaylandi",
       text:
         `Merhaba ${reservation.name},\n\n` +
-        `Yalova Sanat yil sonu gosterisi icin yaptiginiz odeme onaylandi.\n` +
-        `Koltuk: ${reservation.seat}\n` +
+        `Yalova Sanat yil sonu gosterisi icin rezervasyonunuz onaylandi.\n` +
+        `Koltuklar: ${seats}\n` +
         `Referans: ${reservation.reference}\n\n` +
         `Etkinlik gununde bu bilgileri saklamanizi rica ederiz.\n\n` +
         `Yalova Sanat Bale & Dans Kursu`,
       html:
         `<p>Merhaba ${reservation.name},</p>` +
-        `<p>Yalova Sanat yil sonu gosterisi icin yaptiginiz odeme onaylandi.</p>` +
-        `<p><strong>Koltuk:</strong> ${reservation.seat}<br /><strong>Referans:</strong> ${reservation.reference}</p>` +
+        `<p>Yalova Sanat yil sonu gosterisi icin rezervasyonunuz onaylandi.</p>` +
+        `<p><strong>Koltuklar:</strong> ${seats}<br /><strong>Referans:</strong> ${reservation.reference}</p>` +
         `<p>Etkinlik gununde bu bilgileri saklamanizi rica ederiz.</p>` +
         `<p>Yalova Sanat Bale & Dans Kursu</p>`
     };
   }
 
   return {
-    subject: "Dekontunuz icin guncelleme gerekli",
+    subject: "Rezervasyonunuzla ilgili guncelleme gerekli",
     text:
       `Merhaba ${reservation.name},\n\n` +
-      `Yalova Sanat yil sonu gosterisi icin gonderdiginiz dekont tekrar kontrol edilmelidir.\n` +
+      `Yalova Sanat yil sonu gosterisi icin olusturdugunuz rezervasyon tekrar kontrol edilmelidir.\n` +
       `Referans: ${reservation.reference}\n` +
-      `Lutfen okul ile iletisime gecerek odeme kaydinizi guncelleyin.\n\n` +
+      `Lutfen okul ile iletisime gecerek rezervasyon kaydinizi guncelleyin.\n\n` +
       `Yalova Sanat Bale & Dans Kursu`,
     html:
       `<p>Merhaba ${reservation.name},</p>` +
-      `<p>Yalova Sanat yil sonu gosterisi icin gonderdiginiz dekont tekrar kontrol edilmelidir.</p>` +
+      `<p>Yalova Sanat yil sonu gosterisi icin olusturdugunuz rezervasyon tekrar kontrol edilmelidir.</p>` +
       `<p><strong>Referans:</strong> ${reservation.reference}</p>` +
-      `<p>Lutfen okul ile iletisime gecerek odeme kaydinizi guncelleyin.</p>` +
+      `<p>Lutfen okul ile iletisime gecerek rezervasyon kaydinizi guncelleyin.</p>` +
       `<p>Yalova Sanat Bale & Dans Kursu</p>`
   };
 }
@@ -497,9 +498,9 @@ async function handleApi(request, response, url) {
       email,
       reference: createReferenceCode(seats[0]),
       amount: TICKET_PRICE * seats.length,
-      status: "awaiting_payment",
+      status: "pending",
       createdAt: new Date().toLocaleString("tr-TR"),
-      expiresAt: new Date(Date.now() + HOLD_MINUTES * 60 * 1000).toISOString()
+      expiresAt: ""
     };
 
     db.prepare(`

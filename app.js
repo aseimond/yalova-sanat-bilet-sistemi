@@ -1,8 +1,6 @@
-const TICKET_PRICE = 500;
-const HOLD_MINUTES = 10;
 const MAX_TICKETS_PER_ORDER = 5;
-const LEFT_RIGHT_ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "İ", "J", "K", "L", "M", "N", "O", "Ö", "P"];
-const CENTER_ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "İ", "J", "K", "L", "M", "N", "O", "Ö"];
+const LEFT_RIGHT_ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "I", "J", "K", "L", "M", "N", "O", "O", "P"];
+const CENTER_ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "I", "J", "K", "L", "M", "N", "O", "O"];
 
 function buildSeatLayout() {
   const leftSeats = [];
@@ -10,7 +8,7 @@ function buildSeatLayout() {
   const rightSeats = [];
   let leftNumber = 1;
   let centerNumber = 1;
-  let rightNumber = 1;
+  let rightNumber = 353;
 
   LEFT_RIGHT_ROWS.forEach((row) => {
     for (let i = 0; i < 5; i += 1) {
@@ -58,8 +56,6 @@ const state = {
   activeReservation: null,
   bookedByDefault: ["A2", "A5", "B4", "C1"],
   blockedSeats: ["A2", "A5", "B4", "C1"],
-  holdMinutes: HOLD_MINUTES,
-  holdTimerId: null,
   maxTicketsPerOrder: MAX_TICKETS_PER_ORDER
 };
 
@@ -80,7 +76,7 @@ async function requestJson(url, options = {}) {
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.error || "İşlem başarısız oldu.");
+    throw new Error(data.error || "Islem basarisiz oldu.");
   }
 
   return data;
@@ -93,7 +89,6 @@ async function loadSharedState() {
   ]);
 
   state.bookedByDefault = config.bookedByDefault || [];
-  state.holdMinutes = config.holdMinutes || HOLD_MINUTES;
   state.maxTicketsPerOrder = config.maxTicketsPerOrder || MAX_TICKETS_PER_ORDER;
   state.blockedSeats = availability.blockedSeats || [...state.bookedByDefault];
 }
@@ -103,10 +98,10 @@ function getBookedSeats() {
 }
 
 function formatStatus(status) {
-  if (status === "approved") return "Onaylandı";
+  if (status === "approved") return "Onaylandi";
   if (status === "rejected") return "Reddedildi";
-  if (status === "awaiting_payment") return "Ödeme Bekleniyor";
-  return "İncelemede";
+  if (status === "awaiting_payment") return "Beklemede";
+  return "Rezervasyon Alindi";
 }
 
 function statusBoxClass(status) {
@@ -115,69 +110,10 @@ function statusBoxClass(status) {
   return "status-box pending";
 }
 
-function fileToDataUrl(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = () => reject(new Error("Dekont okunamadı."));
-    reader.readAsDataURL(file);
-  });
-}
-
 function setText(element, text) {
   if (element) {
     element.textContent = text;
   }
-}
-
-function formatRemainingTime(expiresAt) {
-  const ms = new Date(expiresAt).getTime() - Date.now();
-  if (ms <= 0) {
-    return "00:00";
-  }
-
-  const totalSeconds = Math.floor(ms / 1000);
-  const minutes = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
-  const seconds = String(totalSeconds % 60).padStart(2, "0");
-  return `${minutes}:${seconds}`;
-}
-
-function stopHoldTimer() {
-  if (state.holdTimerId) {
-    clearInterval(state.holdTimerId);
-    state.holdTimerId = null;
-  }
-}
-
-function startHoldTimer(statusBox, map, selectedSeatRef) {
-  stopHoldTimer();
-
-  if (!state.activeReservation?.expiresAt || state.activeReservation.status !== "awaiting_payment") {
-    return;
-  }
-
-  const tick = async () => {
-    const remaining = formatRemainingTime(state.activeReservation.expiresAt);
-    statusBox.className = "status-box pending";
-    statusBox.textContent = `Bu koltuk senin icin ${remaining} boyunca tutuluyor. Bu surede odemeyi tamamlamalisin.`;
-    statusBox.classList.remove("hidden");
-
-    if (remaining === "00:00") {
-      stopHoldTimer();
-      state.activeReservation = null;
-      await loadSharedState();
-      renderSeatButtons(map, selectedSeatRef.value);
-      statusBox.className = "status-box rejected";
-      statusBox.textContent = "Koltuk tutma suresi doldu. Bu koltuk tekrar satışa açıldı.";
-    }
-  };
-
-  tick();
-  state.holdTimerId = setInterval(tick, 1000);
-}
-
-function formatCurrency(amount) {
-  return `${amount} TL`;
 }
 
 function groupSeatsByRow(seats, rowLabels) {
@@ -236,24 +172,21 @@ function renderSeatButtons(map, selectedSeats) {
   map.append(
     renderBlock("left", "Sol Blok", seatLayout.leftSeats, LEFT_RIGHT_ROWS, selectedSeats, bookedSeats),
     renderBlock("center", "Orta Blok", seatLayout.centerSeats, CENTER_ROWS, selectedSeats, bookedSeats),
-    renderBlock("right", "Sağ Blok", seatLayout.rightSeats, LEFT_RIGHT_ROWS, selectedSeats, bookedSeats)
+    renderBlock("right", "Sag Blok", seatLayout.rightSeats, LEFT_RIGHT_ROWS, selectedSeats, bookedSeats)
   );
 }
 
 async function renderSeatsPage() {
   const map = document.querySelector("#seat-map");
   const bookingForm = document.querySelector("#booking-form");
-  const paymentSection = document.querySelector("#payment-section");
-  const paymentRef = document.querySelector("#payment-ref");
+  const resultSection = document.querySelector("#reservation-result");
+  const resultRef = document.querySelector("#reservation-ref");
+  const resultSeats = document.querySelector("#reservation-seats");
   const seatLabel = document.querySelector("#selected-seat-label");
   const seatList = document.querySelector("#selected-seat-list");
-  const receiptForm = document.querySelector("#receipt-form");
-  const receiptStatus = document.querySelector("#receipt-status");
   const holdStatus = document.querySelector("#hold-status");
-  const ticketTotal = document.querySelector("#ticket-total");
-  const paymentTotal = document.querySelector("#payment-total");
 
-  if (!map || !bookingForm || !paymentSection || !receiptForm) {
+  if (!map || !bookingForm || !resultSection) {
     return;
   }
 
@@ -265,15 +198,12 @@ async function renderSeatsPage() {
   function syncSelectionSummary() {
     const count = selectedSeatsRef.value.length;
     if (!count) {
-      setText(seatLabel, "Henüz koltuk seçilmedi");
-      setText(seatList, `Aynı anda en fazla ${state.maxTicketsPerOrder} koltuk seçebilirsin.`);
+      setText(seatLabel, "Henuz koltuk secilmedi");
+      setText(seatList, `Ayni anda en fazla ${state.maxTicketsPerOrder} koltuk secebilirsin.`);
     } else {
-      setText(seatLabel, `${count} koltuk seçildi`);
-      setText(seatList, `Seçilen koltuklar: ${selectedSeatsRef.value.join(", ")}`);
+      setText(seatLabel, `${count} koltuk secildi`);
+      setText(seatList, `Secilen koltuklar: ${selectedSeatsRef.value.join(", ")}`);
     }
-
-    setText(ticketTotal, formatCurrency(TICKET_PRICE * Math.max(count, 1)));
-    setText(paymentTotal, formatCurrency(TICKET_PRICE * Math.max(count, 1)));
   }
 
   syncSelectionSummary();
@@ -291,7 +221,7 @@ async function renderSeatsPage() {
       selectedSeatsRef.value = selected.filter((item) => item !== seatId);
     } else {
       if (selected.length >= state.maxTicketsPerOrder) {
-        alert(`Bir kişi en fazla ${state.maxTicketsPerOrder} bilet alabilir.`);
+        alert(`Bir kisi en fazla ${state.maxTicketsPerOrder} koltuk secebilir.`);
         return;
       }
       selectedSeatsRef.value = [...selected, seatId];
@@ -305,7 +235,7 @@ async function renderSeatsPage() {
     event.preventDefault();
 
     if (!selectedSeatsRef.value.length) {
-      alert("Lütfen önce en az bir koltuk seç.");
+      alert("Lutfen once en az bir koltuk sec.");
       return;
     }
 
@@ -326,57 +256,14 @@ async function renderSeatsPage() {
       renderSeatButtons(map, selectedSeatsRef.value);
       syncSelectionSummary();
 
-      paymentSection.classList.remove("hidden");
-      setText(paymentRef, state.activeReservation.reference);
-      setText(paymentTotal, formatCurrency(state.activeReservation.amount));
-      setText(ticketTotal, formatCurrency(state.activeReservation.amount));
-      startHoldTimer(holdStatus, map, selectedSeatsRef);
-      paymentSection.scrollIntoView({ behavior: "smooth", block: "start" });
-    } catch (error) {
-      alert(error.message);
-    }
-  });
-
-  receiptForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
-
-    if (!state.activeReservation) {
-      alert("Önce rezervasyon oluşturmanız gerekiyor.");
-      return;
-    }
-
-    const formData = new FormData(receiptForm);
-    const receiptFile = formData.get("receipt");
-
-    if (!(receiptFile instanceof File) || !receiptFile.name) {
-      alert("Lütfen dekont dosyası seçin.");
-      return;
-    }
-
-    try {
-      const receiptContent = await fileToDataUrl(receiptFile);
-      const reservation = await requestJson(`/api/reservations/${state.activeReservation.id}/receipt`, {
-        method: "POST",
-        body: JSON.stringify({
-          receiptName: receiptFile.name,
-          receiptContent,
-          note: formData.get("note")
-        })
-      });
-
-      state.activeReservation = reservation;
-      stopHoldTimer();
-      await loadSharedState();
-      renderSeatButtons(map, selectedSeatsRef.value);
-
-      receiptStatus.className = "status-box pending";
-      receiptStatus.innerHTML = `
-        Dekont yüklendi. Referans kodunuz <strong>${reservation.reference}</strong> olarak kaydedildi.
-        Rezervasyonunuz şimdi inceleme bekliyor.
-      `;
-      receiptStatus.classList.remove("hidden");
-      holdStatus.classList.add("hidden");
-      receiptForm.reset();
+      resultSection.classList.remove("hidden");
+      setText(resultRef, state.activeReservation.reference);
+      setText(resultSeats, selectedSeatsRef.value.join(", "));
+      holdStatus.className = "status-box success";
+      holdStatus.textContent = "Rezervasyonun alindi. Koltuklar adina ayrildi.";
+      holdStatus.classList.remove("hidden");
+      bookingForm.reset();
+      resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch (error) {
       alert(error.message);
     }
@@ -393,11 +280,9 @@ function buildAdminCard(reservation) {
     <div class="admin-meta">
       <span>Koltuklar: <strong>${(reservation.seats || [reservation.seat]).join(", ")}</strong></span>
       <span>Referans: <strong>${reservation.reference}</strong></span>
-      <span>İletişim: ${reservation.phone} / ${reservation.email}</span>
-      <span>Dekont: ${reservation.receiptName || "Yok"}</span>
-      <span>Yükleme Saati: ${reservation.receiptUploadedAt || "Yok"}</span>
+      <span>Iletisim: ${reservation.phone} / ${reservation.email}</span>
+      <span>Kayit Saati: ${reservation.createdAt || "-"}</span>
       <span>Not: ${reservation.note || "-"}</span>
-      ${reservation.receiptUrl ? `<a href="${reservation.receiptUrl}" target="_blank" rel="noreferrer">Dekontu Aç</a>` : ""}
     </div>
   `;
 
@@ -405,33 +290,31 @@ function buildAdminCard(reservation) {
   currentStatus.className = statusBoxClass(reservation.status);
   currentStatus.textContent =
     reservation.status === "approved"
-      ? "Bu rezervasyon onaylandı. Koltuk satılmış olarak korunur."
+      ? "Bu rezervasyon onaylandi ve koltuklar ayrildi."
       : reservation.status === "rejected"
-        ? "Bu kayıt reddedildi. Gerekirse kullanıcıdan yeni dekont istenebilir."
-        : reservation.status === "awaiting_payment"
-          ? "Rezervasyon oluşturuldu. Kullanıcının dekont yüklemesi bekleniyor."
-          : "Dekont yüklendi, şimdi banka hareketi ile karşılaştırılıp onay verilmesi bekleniyor.";
+        ? "Bu rezervasyon reddedildi. Gerekirse kisiyle tekrar iletisime gecilebilir."
+        : "Rezervasyon olusturuldu ve yonetim panelinde bekliyor.";
 
   const actions = document.createElement("div");
   actions.className = "admin-actions";
 
   const approve = document.createElement("button");
   approve.className = "action-btn";
-  approve.textContent = "Ödemeyi Onayla";
+  approve.textContent = "Rezervasyonu Onayla";
   approve.addEventListener("click", async () => {
     await updateReservationStatus(reservation.id, "approved");
   });
 
   const reject = document.createElement("button");
   reject.className = "action-btn alt";
-  reject.textContent = "Reddet / Düzeltme İste";
+  reject.textContent = "Rezervasyonu Reddet";
   reject.addEventListener("click", async () => {
     await updateReservationStatus(reservation.id, "rejected");
   });
 
   const remove = document.createElement("button");
   remove.className = "action-btn alt";
-  remove.textContent = "Kaydı Sil";
+  remove.textContent = "Kaydi Sil";
   remove.addEventListener("click", async () => {
     await deleteReservation(reservation.id);
   });
@@ -459,7 +342,7 @@ async function renderAdminPage() {
     list.innerHTML = "";
 
     if (!state.reservations.length) {
-      list.innerHTML = `<div class="admin-card empty-state">Henüz yüklenmiş bir kayıt bulunmuyor.</div>`;
+      list.innerHTML = `<div class="admin-card empty-state">Henuz kayit bulunmuyor.</div>`;
       return;
     }
 
@@ -508,7 +391,7 @@ async function renderAdminPage() {
       });
 
       loginStatus.className = "status-box success";
-      loginStatus.textContent = "Giriş başarılı.";
+      loginStatus.textContent = "Giris basarili.";
       loginStatus.classList.remove("hidden");
       loginForm.reset();
       showAdminPanel();
@@ -530,7 +413,7 @@ async function renderAdminPage() {
   });
 
   cleanupButton?.addEventListener("click", async () => {
-    const confirmed = window.confirm("Reddedilmiş ve süresi dolmuş test kayıtlarını temizlemek istiyor musun?");
+    const confirmed = window.confirm("Reddedilmis ve suresi dolmus test kayitlarini temizlemek istiyor musun?");
     if (!confirmed) {
       return;
     }
@@ -540,7 +423,7 @@ async function renderAdminPage() {
         method: "POST",
         body: JSON.stringify({})
       });
-      alert(`${result.deletedCount} kayıt temizlendi.`);
+      alert(`${result.deletedCount} kayit temizlendi.`);
       await renderAdminPage();
     } catch (error) {
       alert(error.message);
@@ -566,7 +449,7 @@ async function updateReservationStatus(id, status) {
 }
 
 async function deleteReservation(id) {
-  const confirmed = window.confirm("Bu kaydı silmek istiyor musun?");
+  const confirmed = window.confirm("Bu kaydi silmek istiyor musun?");
   if (!confirmed) {
     return;
   }

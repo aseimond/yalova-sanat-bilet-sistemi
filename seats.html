@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bilet Al | Yalova Sanat</title>
+  <title>Rezervasyon Yap | Yalova Sanat</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -21,39 +21,45 @@
 
       <div class="inner-hero-grid">
         <div class="glass-panel">
-          <p class="eyebrow">Bilet Alımı</p>
-          <h1>Koltuk seç, ödemenı yap, dekontu yükle.</h1>
+          <p class="eyebrow">Rezervasyon</p>
+          <h1>Koltuk sec ve rezervasyonunu hemen olustur.</h1>
           <p class="hero-lead">
-            Bu sayfa işlemi hızlıca tamamlayabilmen için sade tutuldu. Önce koltuğunu seç, sonra formu doldur.
-            Sistem sana ödeme için özel bir referans kodu verecek.
+            Bu sayfa sade tutuldu. Once sahne duzenini incele, koltuklarini sec ve bilgilerini doldur.
           </p>
         </div>
         <div class="photo-card banner-photo">
-          <img src="assets/images/bale3.jpg" alt="Sahnede bekleyen çocuk balerinler" />
+          <img src="assets/images/bale3.jpg" alt="Sahnede bekleyen cocuk balerinler" />
         </div>
       </div>
     </header>
 
     <main class="ticket-layout">
       <section class="stage-section">
+        <p class="panel-label">Sahne Duzeni</p>
+        <h2>Koltuk planini net sekilde inceleyip secimini yap.</h2>
+        <p class="stage-note">
+          Once tum sahne duzenini gor, sonra asagi kaydirip secim ozeti ve rezervasyon bilgilerine gec.
+        </p>
         <div class="stage-labels">
           <span>Sol Blok</span>
-          <span>Sahne Önü</span>
-          <span>Sağ Blok</span>
+          <span>Sahne Onu</span>
+          <span>Sag Blok</span>
         </div>
         <div class="stage">SAHNE</div>
-        <div id="seat-map" class="seat-map" aria-label="Koltuk Haritası"></div>
+        <div class="seat-map-shell">
+          <div id="seat-map" class="seat-map" aria-label="Koltuk Haritasi"></div>
+        </div>
       </section>
 
-      <aside class="booking-panel">
+      <section class="booking-panel" aria-label="Rezervasyon Akisi">
         <div class="summary-card">
-          <p class="panel-label">Seçim Özeti</p>
-          <h2 id="selected-seat-label">Henüz koltuk seçilmedi</h2>
-          <p id="selected-seat-list" class="selected-seat-list">Aynı anda en fazla 5 koltuk seçebilirsin.</p>
+          <p class="panel-label">Secim Ozeti</p>
+          <h2 id="selected-seat-label">Henuz koltuk secilmedi</h2>
+          <p id="selected-seat-list" class="selected-seat-list">Ayni anda en fazla 5 koltuk secebilirsin.</p>
           <div class="summary-lines">
-            <p><span>Etkinlik</span><strong>Yıl Sonu Bale Gecesi</strong></p>
-            <p><span>Bilet Bedeli</span><strong id="ticket-total">500 TL</strong></p>
-            <p><span>Ödeme Tipi</span><strong>Havale / EFT</strong></p>
+            <p><span>Etkinlik</span><strong>Yil Sonu Bale Gecesi</strong></p>
+            <p><span>Durum</span><strong>Rezervasyon Aliniyor</strong></p>
+            <p><span>Gosteri Yeri</span><strong>Yalova Universitesi Gosteri Salonu</strong></p>
           </div>
           <div id="hold-status" class="status-box hidden"></div>
         </div>
@@ -62,7 +68,7 @@
           <p class="panel-label">Rezervasyon Bilgisi</p>
           <label>
             Ad Soyad
-            <input type="text" name="name" placeholder="Adınız Soyadınız" required />
+            <input type="text" name="name" placeholder="Adiniz Soyadiniz" required />
           </label>
           <label>
             Telefon
@@ -72,35 +78,21 @@
             E-posta
             <input type="email" name="email" placeholder="ornek@mail.com" required />
           </label>
-          <button type="submit" class="primary-btn full-width">Rezervasyonu Oluştur</button>
+          <button type="submit" class="primary-btn full-width">Rezervasyon Yap</button>
         </form>
 
-        <section id="payment-section" class="payment-card hidden" aria-live="polite">
-          <p class="panel-label">Ödeme Bilgisi</p>
+        <section id="reservation-result" class="payment-card hidden" aria-live="polite">
+          <p class="panel-label">Rezervasyon Tamamlandi</p>
           <div class="iban-box">
-            <p><strong>Alıcı:</strong> Yalova Sanat Bale & Dans Kursu</p>
-            <p><strong>IBAN:</strong> TR12 3456 7890 1234 5678 9012 34</p>
-            <p><strong>Tutar:</strong> <span id="payment-total">500 TL</span></p>
-            <p><strong>Açıklama:</strong> <span id="payment-ref"></span></p>
+            <p><strong>Referans:</strong> <span id="reservation-ref"></span></p>
+            <p><strong>Koltuklar:</strong> <span id="reservation-seats"></span></p>
+            <p><strong>Durum:</strong> Rezervasyonunuz kaydedildi.</p>
           </div>
           <p class="payment-note">
-            Lütfen banka açıklamasına ekranda görünen referans kodunu yazın. Böylece dekont ile ödeme kaydı kolayca eşleşir.
+            Rezervasyonunuz okul yonetimi tarafinda goruntulenecek. Guncelleme gerekirse sizinle iletisime gecilebilir.
           </p>
-
-          <form id="receipt-form" class="receipt-form">
-            <label>
-              Dekont Dosyası
-              <input type="file" name="receipt" accept=".jpg,.jpeg,.png,.pdf" required />
-            </label>
-            <label>
-              Transfer Notu
-              <textarea name="note" rows="3" placeholder="Örn: Havale 14:42'de gönderildi, açıklamaya referans yazıldı."></textarea>
-            </label>
-            <button type="submit" class="primary-btn full-width">Dekontu Gönder</button>
-          </form>
-          <div id="receipt-status" class="status-box hidden"></div>
         </section>
-      </aside>
+      </section>
     </main>
   </div>
 
