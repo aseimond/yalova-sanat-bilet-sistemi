@@ -489,8 +489,8 @@ h3 {
 
 .seat-map {
   display: grid;
-  grid-template-columns: minmax(0, 220px) minmax(0, 1fr) minmax(0, 220px);
-  gap: 18px;
+  grid-template-columns: max-content max-content max-content;
+  gap: 12px;
   align-items: start;
   width: max-content;
   min-width: 100%;
@@ -550,17 +550,19 @@ h3 {
 .seat-row {
   display: grid;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
 }
 
-.seat-row.left-row,
+.seat-row.left-row {
+  grid-template-columns: 20px repeat(5, 28px);
+}
+
 .seat-row.right-row {
-  grid-template-columns: 24px repeat(5, 38px);
+  grid-template-columns: repeat(5, 28px);
 }
 
 .seat-row.center-row {
-  grid-template-columns: 24px repeat(22, 38px);
-  min-width: max-content;
+  grid-template-columns: repeat(22, 28px);
 }
 
 .seat-row-label {
@@ -570,10 +572,10 @@ h3 {
 }
 
 .seat.compact-seat {
-  padding: 8px 0;
-  border-radius: 14px 14px 8px 8px;
-  font-size: 0.78rem;
-  min-width: 38px;
+  padding: 5px 0;
+  border-radius: 8px 8px 5px 5px;
+  font-size: 0.62rem;
+  min-width: 28px;
 }
 
 .seat-layout-block.left-block,

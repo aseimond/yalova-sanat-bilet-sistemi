@@ -1,48 +1,20 @@
 const MAX_TICKETS_PER_ORDER = 5;
-const LEFT_RIGHT_ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "I", "J", "K", "L", "M", "N", "O", "O", "P"];
-const CENTER_ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "I", "J", "K", "L", "M", "N", "O", "O"];
+const ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"];
 
 function buildSeatLayout() {
   const leftSeats = [];
   const centerSeats = [];
   const rightSeats = [];
-  let leftNumber = 1;
-  let centerNumber = 1;
-  let rightNumber = 353;
 
-  LEFT_RIGHT_ROWS.forEach((row) => {
-    for (let i = 0; i < 5; i += 1) {
-      leftSeats.push({
-        id: `L-${leftNumber}`,
-        display: String(leftNumber),
-        row,
-        block: "left"
-      });
-      leftNumber += 1;
+  ROWS.forEach((row) => {
+    for (let i = 1; i <= 5; i++) {
+      leftSeats.push({ id: `${row}${i}`, display: String(i), row, block: "left" });
     }
-  });
-
-  CENTER_ROWS.forEach((row) => {
-    for (let i = 0; i < 22; i += 1) {
-      centerSeats.push({
-        id: `C-${centerNumber}`,
-        display: String(centerNumber),
-        row,
-        block: "center"
-      });
-      centerNumber += 1;
+    for (let i = 6; i <= 27; i++) {
+      centerSeats.push({ id: `${row}${i}`, display: String(i), row, block: "center" });
     }
-  });
-
-  LEFT_RIGHT_ROWS.forEach((row) => {
-    for (let i = 0; i < 5; i += 1) {
-      rightSeats.push({
-        id: `R-${rightNumber}`,
-        display: String(rightNumber),
-        row,
-        block: "right"
-      });
-      rightNumber += 1;
+    for (let i = 28; i <= 32; i++) {
+      rightSeats.push({ id: `${row}${i}`, display: String(i), row, block: "right" });
     }
   });
 
@@ -123,7 +95,7 @@ function groupSeatsByRow(seats, rowLabels) {
   }));
 }
 
-function renderBlock(blockName, title, seats, rowLabels, selectedSeats, bookedSeats) {
+function renderBlock(blockName, title, seats, rowLabels, selectedSeats, bookedSeats, showLabel = false) {
   const wrapper = document.createElement("section");
   wrapper.className = `seat-layout-block ${blockName}-block`;
 
@@ -136,10 +108,12 @@ function renderBlock(blockName, title, seats, rowLabels, selectedSeats, bookedSe
     const rowElement = document.createElement("div");
     rowElement.className = `seat-row ${blockName}-row`;
 
-    const label = document.createElement("span");
-    label.className = "seat-row-label";
-    label.textContent = row;
-    rowElement.appendChild(label);
+    if (showLabel) {
+      const label = document.createElement("span");
+      label.className = "seat-row-label";
+      label.textContent = row;
+      rowElement.appendChild(label);
+    }
 
     rowSeats.forEach((seat) => {
       const button = document.createElement("button");
@@ -170,9 +144,9 @@ function renderSeatButtons(map, selectedSeats) {
   const bookedSeats = getBookedSeats();
   map.innerHTML = "";
   map.append(
-    renderBlock("left", "Sol Blok", seatLayout.leftSeats, LEFT_RIGHT_ROWS, selectedSeats, bookedSeats),
-    renderBlock("center", "Orta Blok", seatLayout.centerSeats, CENTER_ROWS, selectedSeats, bookedSeats),
-    renderBlock("right", "Sag Blok", seatLayout.rightSeats, LEFT_RIGHT_ROWS, selectedSeats, bookedSeats)
+    renderBlock("left", "Sol Blok", seatLayout.leftSeats, ROWS, selectedSeats, bookedSeats, true),
+    renderBlock("center", "Orta Blok", seatLayout.centerSeats, ROWS, selectedSeats, bookedSeats, false),
+    renderBlock("right", "Sağ Blok", seatLayout.rightSeats, ROWS, selectedSeats, bookedSeats, false)
   );
 }
 
