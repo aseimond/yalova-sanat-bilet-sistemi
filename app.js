@@ -1,35 +1,102 @@
 const MAX_TICKETS_PER_ORDER = 5;
-const ROWS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N"];
 
-function buildSeatLayout() {
-  const leftSeats = [];
-  const centerSeats = [];
-  const rightSeats = [];
+const LEFT_BLOCK_ROWS = [
+  { row: "A", start: 1, end: 5 },
+  { row: "B", start: 1, end: 5 },
+  { row: "C", start: 1, end: 4 },
+  { row: "D", start: 1, end: 5 },
+  { row: "E", start: 1, end: 5 },
+  { row: "F", start: 1, end: 5 },
+  { row: "G", start: 1, end: 5 },
+  { row: "H", start: 1, end: 5 },
+  { row: "I", start: 1, end: 5 },
+  { row: "İ", start: 1, end: 4 },
+  { row: "J", start: 1, end: 5 },
+  { row: "K", start: 1, end: 5 },
+  { row: "L", start: 1, end: 5 },
+  { row: "M", start: 1, end: 5 },
+  { row: "N", start: 1, end: 5 },
+  { row: "O", start: 1, end: 5 },
+  { row: "Ö", start: 1, end: 5 },
+  { row: "P", start: 1, end: 4 }
+];
 
-  ROWS.forEach((row) => {
-    for (let i = 1; i <= 5; i++) {
-      leftSeats.push({ id: `${row}${i}`, display: String(i), row, block: "left" });
+const CENTER_BLOCK_ROWS = [
+  { row: "A", start: 6, end: 27 },
+  { row: "B", start: 6, end: 28 },
+  { row: "C", start: 5, end: 26 },
+  { row: "D", start: 6, end: 28 },
+  { row: "E", start: 6, end: 27 },
+  { row: "F", start: 6, end: 28 },
+  { row: "G", start: 6, end: 27 },
+  { row: "H", start: 6, end: 28 },
+  { row: "I", start: 6, end: 27 },
+  { row: "İ", start: 5, end: 27 },
+  { row: "J", start: 6, end: 27 },
+  { row: "K", start: 6, end: 28 },
+  { row: "L", start: 6, end: 27 },
+  { row: "M", start: 5, end: 28 },
+  { row: "N", start: 6, end: 27 },
+  { row: "O", start: 6, end: 28 },
+  { row: "Ö", start: 6, end: 27 }
+];
+
+const RIGHT_BLOCK_ROWS = [
+  { row: "A", start: 28, end: 32 },
+  { row: "B", start: 29, end: 33 },
+  { row: "C", start: 27, end: 30 },
+  { row: "D", start: 29, end: 33 },
+  { row: "E", start: 28, end: 32 },
+  { row: "F", start: 29, end: 33 },
+  { row: "G", start: 28, end: 32 },
+  { row: "H", start: 29, end: 33 },
+  { row: "I", start: 28, end: 32 },
+  { row: "İ", start: 28, end: 31 },
+  { row: "J", start: 28, end: 32 },
+  { row: "K", start: 29, end: 33 },
+  { row: "L", start: 28, end: 32 },
+  { row: "M", start: 29, end: 33 },
+  { row: "N", start: 28, end: 32 },
+  { row: "O", start: 29, end: 33 },
+  { row: "Ö", start: 28, end: 32 },
+  { row: "P", start: 6, end: 9 }
+];
+
+function buildBlockSeats(blockKey, blockLabel, rows) {
+  return rows.flatMap(({ row, start, end }) => {
+    const seats = [];
+    for (let number = start; number <= end; number += 1) {
+      seats.push({
+        id: `${blockKey}-${row}-${number}`,
+        value: `${blockLabel} ${row}-${number}`,
+        display: String(number),
+        row,
+        block: blockKey
+      });
     }
-    for (let i = 6; i <= 27; i++) {
-      centerSeats.push({ id: `${row}${i}`, display: String(i), row, block: "center" });
-    }
-    for (let i = 28; i <= 32; i++) {
-      rightSeats.push({ id: `${row}${i}`, display: String(i), row, block: "right" });
-    }
+    return seats;
   });
-
-  return { leftSeats, centerSeats, rightSeats };
 }
 
-const seatLayout = buildSeatLayout();
+const seatLayout = {
+  leftSeats: buildBlockSeats("left", "Sol", LEFT_BLOCK_ROWS),
+  centerSeats: buildBlockSeats("center", "Orta", CENTER_BLOCK_ROWS),
+  rightSeats: buildBlockSeats("right", "Sağ", RIGHT_BLOCK_ROWS)
+};
 
 const state = {
   reservations: [],
   activeReservation: null,
-  bookedByDefault: ["A2", "A5", "B4", "C1"],
-  blockedSeats: ["A2", "A5", "B4", "C1"],
+  bookedByDefault: [],
+  blockedSeats: [],
   maxTicketsPerOrder: MAX_TICKETS_PER_ORDER
 };
+
+function seatRowsForBlock(blockName) {
+  if (blockName === "left") return LEFT_BLOCK_ROWS;
+  if (blockName === "center") return CENTER_BLOCK_ROWS;
+  return RIGHT_BLOCK_ROWS;
+}
 
 async function requestJson(url, options = {}) {
   const headers = {
@@ -48,7 +115,7 @@ async function requestJson(url, options = {}) {
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.error || "Islem basarisiz oldu.");
+    throw new Error(data.error || "İşlem başarısız oldu.");
   }
 
   return data;
@@ -70,10 +137,10 @@ function getBookedSeats() {
 }
 
 function formatStatus(status) {
-  if (status === "approved") return "Onaylandi";
+  if (status === "approved") return "Onaylandı";
   if (status === "rejected") return "Reddedildi";
   if (status === "awaiting_payment") return "Beklemede";
-  return "Rezervasyon Alindi";
+  return "Rezervasyon Alındı";
 }
 
 function statusBoxClass(status) {
@@ -88,14 +155,14 @@ function setText(element, text) {
   }
 }
 
-function groupSeatsByRow(seats, rowLabels) {
-  return rowLabels.map((row) => ({
-    row,
-    seats: seats.filter((seat) => seat.row === row)
+function groupSeatsByRow(seats, rows) {
+  return rows.map((rowConfig) => ({
+    ...rowConfig,
+    seats: seats.filter((seat) => seat.row === rowConfig.row)
   }));
 }
 
-function renderBlock(blockName, title, seats, rowLabels, selectedSeats, bookedSeats, showLabel = false) {
+function renderBlock(blockName, title, seats, selectedSeats, bookedSeats) {
   const wrapper = document.createElement("section");
   wrapper.className = `seat-layout-block ${blockName}-block`;
 
@@ -104,30 +171,30 @@ function renderBlock(blockName, title, seats, rowLabels, selectedSeats, bookedSe
   header.textContent = title;
   wrapper.appendChild(header);
 
-  groupSeatsByRow(seats, rowLabels).forEach(({ row, seats: rowSeats }) => {
+  groupSeatsByRow(seats, seatRowsForBlock(blockName)).forEach(({ row, seats: rowSeats }) => {
     const rowElement = document.createElement("div");
     rowElement.className = `seat-row ${blockName}-row`;
+    rowElement.style.gridTemplateColumns = `24px repeat(${rowSeats.length}, 38px)`;
 
-    if (showLabel) {
-      const label = document.createElement("span");
-      label.className = "seat-row-label";
-      label.textContent = row;
-      rowElement.appendChild(label);
-    }
+    const label = document.createElement("span");
+    label.className = "seat-row-label";
+    label.textContent = row;
+    rowElement.appendChild(label);
 
     rowSeats.forEach((seat) => {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "seat compact-seat";
-      button.dataset.seatId = seat.id;
+      button.dataset.seatValue = seat.value;
+      button.title = seat.value;
       button.textContent = seat.display;
 
-      if (bookedSeats.has(seat.id)) {
+      if (bookedSeats.has(seat.value)) {
         button.classList.add("booked");
         button.disabled = true;
       }
 
-      if (selectedSeats.includes(seat.id)) {
+      if (selectedSeats.includes(seat.value)) {
         button.classList.add("selected");
       }
 
@@ -144,9 +211,9 @@ function renderSeatButtons(map, selectedSeats) {
   const bookedSeats = getBookedSeats();
   map.innerHTML = "";
   map.append(
-    renderBlock("left", "Sol Blok", seatLayout.leftSeats, ROWS, selectedSeats, bookedSeats, true),
-    renderBlock("center", "Orta Blok", seatLayout.centerSeats, ROWS, selectedSeats, bookedSeats, false),
-    renderBlock("right", "Sağ Blok", seatLayout.rightSeats, ROWS, selectedSeats, bookedSeats, false)
+    renderBlock("left", "Sol Blok", seatLayout.leftSeats, selectedSeats, bookedSeats),
+    renderBlock("center", "Orta Blok", seatLayout.centerSeats, selectedSeats, bookedSeats),
+    renderBlock("right", "Sağ Blok", seatLayout.rightSeats, selectedSeats, bookedSeats)
   );
 }
 
@@ -172,11 +239,11 @@ async function renderSeatsPage() {
   function syncSelectionSummary() {
     const count = selectedSeatsRef.value.length;
     if (!count) {
-      setText(seatLabel, "Henuz koltuk secilmedi");
-      setText(seatList, `Ayni anda en fazla ${state.maxTicketsPerOrder} koltuk secebilirsin.`);
+      setText(seatLabel, "Henüz koltuk seçilmedi");
+      setText(seatList, `Aynı anda en fazla ${state.maxTicketsPerOrder} koltuk seçebilirsin.`);
     } else {
-      setText(seatLabel, `${count} koltuk secildi`);
-      setText(seatList, `Secilen koltuklar: ${selectedSeatsRef.value.join(", ")}`);
+      setText(seatLabel, `${count} koltuk seçildi`);
+      setText(seatList, `Seçilen koltuklar: ${selectedSeatsRef.value.join(", ")}`);
     }
   }
 
@@ -188,17 +255,17 @@ async function renderSeatsPage() {
       return;
     }
 
-    const seatId = button.dataset.seatId;
+    const seatValue = button.dataset.seatValue;
     const selected = selectedSeatsRef.value;
 
-    if (selected.includes(seatId)) {
-      selectedSeatsRef.value = selected.filter((item) => item !== seatId);
+    if (selected.includes(seatValue)) {
+      selectedSeatsRef.value = selected.filter((item) => item !== seatValue);
     } else {
       if (selected.length >= state.maxTicketsPerOrder) {
-        alert(`Bir kisi en fazla ${state.maxTicketsPerOrder} koltuk secebilir.`);
+        alert(`Bir kişi en fazla ${state.maxTicketsPerOrder} koltuk seçebilir.`);
         return;
       }
-      selectedSeatsRef.value = [...selected, seatId];
+      selectedSeatsRef.value = [...selected, seatValue];
     }
 
     syncSelectionSummary();
@@ -209,7 +276,7 @@ async function renderSeatsPage() {
     event.preventDefault();
 
     if (!selectedSeatsRef.value.length) {
-      alert("Lutfen once en az bir koltuk sec.");
+      alert("Lütfen önce en az bir koltuk seç.");
       return;
     }
 
@@ -234,7 +301,7 @@ async function renderSeatsPage() {
       setText(resultRef, state.activeReservation.reference);
       setText(resultSeats, selectedSeatsRef.value.join(", "));
       holdStatus.className = "status-box success";
-      holdStatus.textContent = "Rezervasyonun alindi. Koltuklar adina ayrildi.";
+      holdStatus.textContent = "Rezervasyonun alındı. Koltukların adına ayrıldı.";
       holdStatus.classList.remove("hidden");
       bookingForm.reset();
       resultSection.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -254,8 +321,8 @@ function buildAdminCard(reservation) {
     <div class="admin-meta">
       <span>Koltuklar: <strong>${(reservation.seats || [reservation.seat]).join(", ")}</strong></span>
       <span>Referans: <strong>${reservation.reference}</strong></span>
-      <span>Iletisim: ${reservation.phone} / ${reservation.email}</span>
-      <span>Kayit Saati: ${reservation.createdAt || "-"}</span>
+      <span>İletişim: ${reservation.phone} / ${reservation.email}</span>
+      <span>Kayıt Saati: ${reservation.createdAt || "-"}</span>
       <span>Not: ${reservation.note || "-"}</span>
     </div>
   `;
@@ -264,10 +331,10 @@ function buildAdminCard(reservation) {
   currentStatus.className = statusBoxClass(reservation.status);
   currentStatus.textContent =
     reservation.status === "approved"
-      ? "Bu rezervasyon onaylandi ve koltuklar ayrildi."
+      ? "Bu rezervasyon onaylandı ve koltuklar ayrıldı."
       : reservation.status === "rejected"
-        ? "Bu rezervasyon reddedildi. Gerekirse kisiyle tekrar iletisime gecilebilir."
-        : "Rezervasyon olusturuldu ve yonetim panelinde bekliyor.";
+        ? "Bu rezervasyon reddedildi. Gerekirse kişiyle tekrar iletişime geçilebilir."
+        : "Rezervasyon oluşturuldu ve yönetim panelinde bekliyor.";
 
   const actions = document.createElement("div");
   actions.className = "admin-actions";
@@ -288,7 +355,7 @@ function buildAdminCard(reservation) {
 
   const remove = document.createElement("button");
   remove.className = "action-btn alt";
-  remove.textContent = "Kaydi Sil";
+  remove.textContent = "Kaydı Sil";
   remove.addEventListener("click", async () => {
     await deleteReservation(reservation.id);
   });
@@ -316,7 +383,7 @@ async function renderAdminPage() {
     list.innerHTML = "";
 
     if (!state.reservations.length) {
-      list.innerHTML = `<div class="admin-card empty-state">Henuz kayit bulunmuyor.</div>`;
+      list.innerHTML = `<div class="admin-card empty-state">Henüz kayıt bulunmuyor.</div>`;
       return;
     }
 
@@ -365,7 +432,7 @@ async function renderAdminPage() {
       });
 
       loginStatus.className = "status-box success";
-      loginStatus.textContent = "Giris basarili.";
+      loginStatus.textContent = "Giriş başarılı.";
       loginStatus.classList.remove("hidden");
       loginForm.reset();
       showAdminPanel();
@@ -387,7 +454,7 @@ async function renderAdminPage() {
   });
 
   cleanupButton?.addEventListener("click", async () => {
-    const confirmed = window.confirm("Reddedilmis ve suresi dolmus test kayitlarini temizlemek istiyor musun?");
+    const confirmed = window.confirm("Reddedilmiş ve süresi dolmuş test kayıtlarını temizlemek istiyor musun?");
     if (!confirmed) {
       return;
     }
@@ -397,7 +464,7 @@ async function renderAdminPage() {
         method: "POST",
         body: JSON.stringify({})
       });
-      alert(`${result.deletedCount} kayit temizlendi.`);
+      alert(`${result.deletedCount} kayıt temizlendi.`);
       await renderAdminPage();
     } catch (error) {
       alert(error.message);
@@ -423,7 +490,7 @@ async function updateReservationStatus(id, status) {
 }
 
 async function deleteReservation(id) {
-  const confirmed = window.confirm("Bu kaydi silmek istiyor musun?");
+  const confirmed = window.confirm("Bu kaydı silmek istiyor musun?");
   if (!confirmed) {
     return;
   }
